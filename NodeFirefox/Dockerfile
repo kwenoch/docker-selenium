@@ -1,8 +1,4 @@
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# NOTE: DO *NOT* EDIT THIS FILE.  IT IS GENERATED.
-# PLEASE UPDATE Dockerfile.txt INSTEAD OF THIS FILE
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FROM selenium/node-base:3.141.59-zirconium
+FROM ghcr.io/kwenoch/selenium-node-base:3-aarch64
 LABEL authors=SeleniumHQ
 
 USER root
@@ -10,26 +6,28 @@ USER root
 #=========
 # Firefox
 #=========
-ARG FIREFOX_VERSION=latest
-RUN FIREFOX_DOWNLOAD_URL=$(if [ $FIREFOX_VERSION = "latest" ] || [ $FIREFOX_VERSION = "nightly-latest" ] || [ $FIREFOX_VERSION = "devedition-latest" ]; then echo "https://download.mozilla.org/?product=firefox-$FIREFOX_VERSION-ssl&os=linux64&lang=en-US"; else echo "https://download-installer.cdn.mozilla.net/pub/firefox/releases/$FIREFOX_VERSION/linux-x86_64/en-US/firefox-$FIREFOX_VERSION.tar.bz2"; fi) \
+ARG FIREFOX_VERSION="113.0.2"
+RUN FIREFOX_DOWNLOAD_URL="https://github.com/kwenoch/firefox-lfs-backup/raw/refs/heads/v113/firefox_$FIREFOX_VERSION+build1-0ubuntu0.18.04.1_arm64.tar.xz" \
   && apt-get update -qqy \
-  && apt-get -qqy --no-install-recommends install firefox \
+  && apt-get -qqy --no-install-recommends install firefox xz-utils \
   && rm -rf /var/lib/apt/lists/* /var/cache/apt/* \
-  && wget --no-verbose -O /tmp/firefox.tar.bz2 $FIREFOX_DOWNLOAD_URL \
+  && wget --no-verbose -O /tmp/firefox.tar.xz $FIREFOX_DOWNLOAD_URL \
   && apt-get -y purge firefox \
   && rm -rf /opt/firefox \
-  && tar -C /opt -xjf /tmp/firefox.tar.bz2 \
-  && rm /tmp/firefox.tar.bz2 \
-  && mv /opt/firefox /opt/firefox-$FIREFOX_VERSION \
+  && mkdir -p /opt/firefox \
+  && tar -C /opt/firefox -xvf /tmp/firefox.tar.xz \
+  && rm /tmp/firefox.tar.xz \
+  && mv /opt/firefox/usr/lib/firefox /opt/firefox-$FIREFOX_VERSION \
+  && rm -rf /opt/firefox \
   && ln -fs /opt/firefox-$FIREFOX_VERSION/firefox /usr/bin/firefox
 
 #============
 # GeckoDriver
 #============
-ARG GECKODRIVER_VERSION=latest
-RUN GK_VERSION=$(if [ ${GECKODRIVER_VERSION:-latest} = "latest" ]; then echo "0.26.0"; else echo $GECKODRIVER_VERSION; fi) \
+ARG GECKODRIVER_VERSION="0.33.0"
+RUN GK_VERSION=$(if [ ${GECKODRIVER_VERSION:-latest} = "latest" ]; then echo "0.33.0"; else echo $GECKODRIVER_VERSION; fi) \
   && echo "Using GeckoDriver version: "$GK_VERSION \
-  && wget --no-verbose -O /tmp/geckodriver.tar.gz https://github.com/mozilla/geckodriver/releases/download/v$GK_VERSION/geckodriver-v$GK_VERSION-linux64.tar.gz \
+  && wget --no-verbose -O /tmp/geckodriver.tar.gz https://github.com/mozilla/geckodriver/releases/download/v$GK_VERSION/geckodriver-v$GK_VERSION-linux-aarch64.tar.gz \
   && rm -rf /opt/geckodriver \
   && tar -C /opt -zxf /tmp/geckodriver.tar.gz \
   && rm /tmp/geckodriver.tar.gz \

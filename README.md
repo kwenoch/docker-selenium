@@ -359,7 +359,7 @@ A Grid that is ready, composed by a hub and a node, could look like this:
       "version": "3.14.0"
     },
     "os": {
-      "arch": "amd64",
+      "arch": "arm64",
       "name": "Linux",
       "version": "4.9.93-linuxkit-aufs"
     },
